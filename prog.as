@@ -1,12 +1,12 @@
 ;===============================================================================
-; Programa demo.as
+; Programa prog.as
+; Laboratório 3 de Arquitectura de Computadores
+; 
+; Alunos:
+;     Henrique Nogueira 78927
+;     João Martins      -----
 ;
-; Descricao: Demonstracao da utilizacao dos perifericos e interrupcoes no P3
-;	     (1) Escrita de mensagem numa posição pre-definida da janela de 
-;                texto.
-;
-; Autor: Nuno Horta
-; Data: 09/05/2003 				Ultima Alteracao:09/05/2006 
+; Professor Paulo Pontes
 ;===============================================================================
 
 ;===============================================================================
@@ -41,8 +41,9 @@ INICIAL_AST     EQU     0C28h
 
                 ORIG    8000h
 VarTexto1       STR     'Jogo:',FIM_TEXTO
-POSICAO_AST     WORD    INICIAL_AST      ; posição actual do asterisco
-CURSOR_POSITION WORD    004Fh            ; posição actual do cursor NumberWrite
+POSICAO_AST     WORD    INICIAL_AST       ; posição actual do asterisco, inicializada
+					  ;	em (12, 40)
+CURSOR_POSITION WORD    004Fh             ; posição actual do cursor NumberWrite
 
 ;===============================================================================
 ; ZONA III: Codigo
@@ -121,9 +122,9 @@ DelayLoop:      DEC     R1
 
 ;===============================================================================
 ; NumberWrite: Escrever um número dado em R1 na posição CURSOR_POSITION
-;               Entradas: ---
+;               Entradas: R1 - número a escrever
 ;               Saidas: ---
-;               Efeitos: ---
+;               Efeitos: Alteracao da posicao de memoria M[IO]
 ;===============================================================================
 NumberWrite:    PUSH    R2
 		PUSH    R3
@@ -134,7 +135,8 @@ NumberWrite:    PUSH    R2
 		MOV     R3, R1
 		MOV     R5, M[CURSOR_POSITION]
 
-		MOV     R4, 0006h
+		MOV     R4, 0006h        ; subrotina para limpar espaço a escrever
+					 ; limpa 6 caracteres (-65537)
 numberclean:   	MOV     M[IO_CURSOR], R5
 		MOV     R1, ' '
 		CALL    EscCar
@@ -143,7 +145,7 @@ numberclean:   	MOV     M[IO_CURSOR], R5
 		BR.NZ   numberclean
 		
 		MOV     R5, M[CURSOR_POSITION]
-		CMP     R3, 0000h
+		CMP     R3, 0000h        ; caso o número seja negativo, usar módulo
 		BR.NN   Divloop
 		NEG     R3
 
@@ -160,7 +162,7 @@ Divloop:        MOV     R2, 000Ah
 		POP     R1
 		PUSH    R1
 
-		CMP     R1, 0000h     ; verificar numero positivo
+		CMP     R1, 0000h     ; caso número negativo, escrever sinal -
 		BR.NN   ENDnumwrite
 		MOV     M[IO_CURSOR], R5
 		MOV     R1, '-'
