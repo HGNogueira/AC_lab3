@@ -107,23 +107,11 @@ EscCar:         MOV     M[IO_WRITE], R1
                 RET                     
 
 ;===============================================================================
-; Delay: Rotina que permite gerar um atraso
-;               Entradas: ---
-;               Saidas: ---
-;               Efeitos: ---
-;===============================================================================
-
-Delay:          PUSH    R1
-                MOV     R1, DELAYVALUE
-DelayLoop:      DEC     R1
-                BR.NZ   DelayLoop
-                POP     R1
-                RET
-;===============================================================================
 ; NumberWrite: Escrever um número dado em R1 na posição CURSOR_POSITION
 ;               Entradas: R1 - número a escrever
 ;               Saidas: ---
-;               Efeitos: Alteracao da posicao de memoria M[IO]
+;               Efeitos: Alteracao da posicao de memoria M[IO_CURSOR], escrita de
+;número na posição dada por M[CURSOR_POSITION]
 ;===============================================================================
 NumberWrite:    PUSH    R2
                 PUSH    R3
@@ -177,7 +165,8 @@ endNumwrite:	POP     R1
 ; ColunaLinha:  Decompõe o número dado por R1 em coluna/linha e escreve
 ;               Entradas: R1 - número com a posição
 ;               Saidas: ---
-;               Efeitos: Alteracao da posicao de memoria M[IO]
+;               Efeitos: Alteracao da posicao de memoria M[IO], escrita da
+; linha e coluna para a janela de texto
 ;===============================================================================
 ColunaLinha:    PUSH    R7
                 PUSH    R5
@@ -209,7 +198,7 @@ colWrite:    MOV     R7, 014Fh
 ;                no input do teclado
 ;               Entradas: ---
 ;               Saidas: ---
-;               Efeitos: ---
+;               Efeitos: actualização do asterisco, altera M[POSICAO_AST] e M[IO_CURSOR]
 ;===============================================================================
 MoveAsterisco:  PUSH    R2 
                 PUSH    R1
