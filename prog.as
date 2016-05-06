@@ -1,10 +1,10 @@
 ;===============================================================================
 ; Programa prog.as
-; Laboratório 3 de Arquitectura de Computadores
+; LaboratÃ³rio 3 de Arquitectura de Computadores
 ; 
 ; Alunos:
 ;     Henrique Nogueira 78927
-;     João Martins      -----
+;     JoÃ£o Martins      84092
 ;
 ; Professor Paulo Lopes
 ;===============================================================================
@@ -30,7 +30,7 @@ LIMPAR_JANELA   EQU     FFFFh
 XY_INICIAL      EQU     0000h
 FIM_TEXTO       EQU     '@'
 
-INICIAL_AST     EQU     0C28h
+INICIAL_AST     EQU     0C28h             ; posicao inicial asterisco (12,40)
 
 ;===============================================================================
 ; ZONA II: Definicao de variaveis
@@ -41,9 +41,9 @@ INICIAL_AST     EQU     0C28h
 
                 ORIG    8000h
 VarTexto1       STR     'Jogo:',FIM_TEXTO
-POSICAO_AST     WORD    INICIAL_AST       ; posição actual do asterisco, inicializada
+POSICAO_AST     WORD    INICIAL_AST       ; posiÃ§Ã£o actual do asterisco, inicializada
 					  ;	em (12, 40)
-CURSOR_POSITION WORD    004Fh             ; posição actual do cursor NumberWrite
+CURSOR_POSITION WORD    004Fh             ; posiÃ§Ã£o actual do cursor NumberWrite
 
 ;===============================================================================
 ; ZONA III: Codigo
@@ -120,8 +120,8 @@ DelayLoop:      DEC     R1
                 POP     R1
                 RET
 ;===============================================================================
-; NumberWrite: Escrever um número dado em R1 na posição CURSOR_POSITION
-;               Entradas: R1 - número a escrever
+; NumberWrite: Escrever um nÃºmero dado em R1 na posiÃ§Ã£o CURSOR_POSITION
+;               Entradas: R1 - nÃºmero a escrever
 ;               Saidas: ---
 ;               Efeitos: Alteracao da posicao de memoria M[IO]
 ;===============================================================================
@@ -134,7 +134,7 @@ NumberWrite:    PUSH    R2
                 MOV     R3, R1
                 MOV     R5, M[CURSOR_POSITION]
 
-                MOV     R4, 0006h        ; subrotina para limpar espaço a escrever
+                MOV     R4, 0006h        ; subrotina para limpar espaÃ§o a escrever
 					 ; limpa 6 caracteres (-65537)
 numberclean:   	MOV     M[IO_CURSOR], R5
                 MOV     R1, ' '
@@ -144,12 +144,12 @@ numberclean:   	MOV     M[IO_CURSOR], R5
                 BR.NZ   numberclean
 		
                 MOV     R5, M[CURSOR_POSITION]
-                CMP     R3, 0000h        ; caso o número seja negativo, usar módulo
+                CMP     R3, 0000h        ; caso o nÃºmero seja negativo, usar mÃ³dulo
                 BR.NN   divloop
                 NEG     R3
 
 divloop:        MOV     R2, 000Ah	
-                DIV     R3, R2        ; resto da divisão em R2, divisao inteira em R3
+                DIV     R3, R2        ; resto da divisÃ£o em R2, divisao inteira em R3
                 MOV     R1, R2
                 ADD     R1, '0'
                 MOV     M[IO_CURSOR], R5
@@ -161,7 +161,7 @@ divloop:        MOV     R2, 000Ah
                 POP     R1
                 PUSH    R1
 
-                CMP     R1, 0000h     ; caso número negativo, escrever sinal -
+                CMP     R1, 0000h     ; caso nÃºmero negativo, escrever sinal -
                 BR.NN   endNumwrite
                 MOV     M[IO_CURSOR], R5
                 MOV     R1, '-'
@@ -174,8 +174,8 @@ endNumwrite:	POP     R1
                 RET
 
 ;===============================================================================
-; ColunaLinha:  Decompõe o número dado por R1 em coluna/linha e escreve
-;               Entradas: R1 - número com a posição
+; ColunaLinha:  DecompÃµe o nÃºmero dado por R1 em coluna/linha e escreve
+;               Entradas: R1 - nÃºmero com a posiÃ§Ã£o
 ;               Saidas: ---
 ;               Efeitos: Alteracao da posicao de memoria M[IO]
 ;===============================================================================
@@ -205,7 +205,7 @@ colWrite:    MOV     R7, 014Fh
                 RET
 
 ;===============================================================================
-; MoveAsterisco: Rotina responsável por mover o caracter asterisco com base
+; MoveAsterisco: Rotina responsÃ¡vel por mover o caracter asterisco com base
 ;                no input do teclado
 ;               Entradas: ---
 ;               Saidas: ---
@@ -219,7 +219,7 @@ MoveAsterisco:  PUSH    R2
 
                 MOV     R5, M[POSICAO_AST]
 
-                MOV     R2, M[FFFFh]             ; qual a tecla pressed
+                MOV     R2, M[IO_READ]             ; qual a tecla primida
                 CMP     R2, 's'
                 BR.NZ   nots
                 ADD     R5, 0100h
@@ -236,7 +236,7 @@ notd:           CMP     R2, 'a'
                 BR.NZ   ignoreMove
                 SUB     R5, 0001h
 
-testcolision:   CMP     R5, 0005h                ; evitar colisão com jogo
+testcolision:   CMP     R5, 0005h                ; evitar colisÃ£o com jogo
                 BR.NN   nocolision
                 CMP     R5, FFFFh
                 BR.N    nocolision
@@ -270,21 +270,21 @@ inicio:         MOV     R1, SP_INICIAL
                 MOV     SP, R1
 
                 CALL    LimpaJanela
-                PUSH    VarTexto1           ; Passagem de parametros pelo STACK
-                PUSH    XY_INICIAL          ; Passagem de parametros pelo STACK
-                CALL    EscString
+                PUSH    VarTexto1           
+                PUSH    XY_INICIAL          
+                CALL    EscString               ; escrever string "Jogo:"
 
                 MOV     R1, M[POSICAO_AST]
                 MOV     M[IO_CURSOR], R1
                 MOV     R1, '*'
-                CALL    EscCar
+                CALL    EscCar                  ; escrever asterico pos. ini.
 
                 MOV     R1, M[POSICAO_AST]
-                CALL    ColunaLinha
+                CALL    ColunaLinha             ; escrever posiÃ§Ã£o, (linha,coluna) 
         
-mainloop:       MOV     R2, M[IO_PRESSED]        ; verificar se existem caracteres por ler
+mainloop:       MOV     R2, M[IO_PRESSED]       ; verificar se existem caracteres por ler
                 CMP     R2, 0001h
-                BR.NZ   mainloop
+                BR.NZ   mainloop                ; chamar MoveAsterisco se tecla primida
                 
                 CALL    MoveAsterisco
                 BR      mainloop
